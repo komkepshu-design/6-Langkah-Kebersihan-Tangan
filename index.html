@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Audit Kebersihan Tangan</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#0d3b66" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Audit HH" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   VARIABLES & RESET
+   ============================================================ */
+:root {
+  --navy:    #0d3b66;
+  --navy2:   #1a5276;
+  --blue:    #2471a3;
+  --sky:     #aed6f1;
+  --green:   #1e8449;
+  --green-l: #d5f5e3;
+  --red:     #c0392b;
+  --red-l:   #fadbd8;
+  --gold:    #f39c12;
+  --white:   #ffffff;
+  --gray-1:  #f4f6f8;
+  --gray-2:  #e8ecf0;
+  --gray-3:  #bdc3c7;
+  --gray-4:  #7f8c8d;
+  --text:    #1c2833;
+  --radius:  12px;
+  --shadow:  0 4px 20px rgba(13,59,102,.13);
+  --transition: .2s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--gray-1);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+}
+
+.topbar-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.topbar-brand img {
+  height: 36px; width: 36px; object-fit: contain;
+  border-radius: 50%; background: white; padding: 2px;
+}
+
+.topbar-title {
+  color: var(--white);
+  font-size: 15px; font-weight: 700; line-height: 1.2;
+}
+
+.topbar-title span {
+  display: block; font-size: 11px; font-weight: 400; opacity: .7;
+}
+
+.topbar-actions { display: flex; gap: 8px; }
+
+.btn-icon {
+  background: rgba(255,255,255,.12);
+  border: none; border-radius: 8px;
+  color: var(--white);
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px;
+  transition: background var(--transition);
+}
+.btn-icon:hover { background: rgba(255,255,255,.22); }
+
+/* ============================================================
+   SIDEBAR DRAWER
+   ============================================================ */
+
+/* Overlay gelap saat sidebar terbuka */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 199;
+}
+.sidebar-overlay.open { display: block; }
+
+/* Sidebar panel */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: 260px;
+  background: var(--navy);
+  z-index: 200;
+  display: flex; flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  box-shadow: 4px 0 24px rgba(0,0,0,.3);
+}
+.sidebar.open { transform: translateX(0); }
+
+/* Desktop: selalu tampil sidebar, main geser */
+@media (min-width: 900px) {
+  .sidebar {
+    transform: translateX(0) !important;
+    position: fixed;
+  }
+  .sidebar-overlay { display: none !important; }
+  .app-shell { margin-left: 260px; }
+  .btn-hamburger { display: none !important; }
+}
+
+/* Sidebar brand header */
+.sidebar-brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.sidebar-brand img {
+  height: 44px; width: 44px; object-fit: contain;
+  border-radius: 10px;
+}
+.sidebar-brand-text { color: var(--white); }
+.sidebar-brand-text .brand-name {
+  font-size: 15px; font-weight: 800; line-height: 1.2;
+}
+.sidebar-brand-text .brand-sub {
+  font-size: 11px; opacity: .65; margin-top: 2px;
+}
+
+/* Menu section label */
+.sidebar-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  color: rgba(255,255,255,.4);
+  padding: 16px 20px 6px;
+  text-transform: uppercase;
+}
+
+/* Nav items */
+.sidebar-nav { flex: 1; padding: 4px 12px; }
+
+.tab-btn {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  background: none; border: none;
+  color: rgba(255,255,255,.65);
+  padding: 12px 14px;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all var(--transition);
+  text-align: left;
+  margin-bottom: 4px;
+}
+.tab-btn .tab-icon { font-size: 18px; width: 22px; text-align: center; }
+.tab-btn:hover {
+  background: rgba(255,255,255,.1);
+  color: var(--white);
+}
+.tab-btn.active {
+  background: var(--blue);
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+
+/* Google Sheets status di bawah sidebar */
+.sidebar-footer {
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  font-size: 11px; color: rgba(255,255,255,.5);
+  display: flex; align-items: center; gap: 8px;
+}
+.sidebar-footer .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #2ecc71; flex-shrink: 0;
+}
+
+/* Hamburger button di topbar */
+.btn-hamburger {
+  background: rgba(255,255,255,.12);
+  border: none; border-radius: 8px;
+  color: var(--white);
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 20px;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+.btn-hamburger:hover { background: rgba(255,255,255,.22); }
+
+/* Page title di topbar (ganti nama halaman aktif) */
+.topbar-page-title {
+  color: var(--white);
+  font-size: 16px; font-weight: 700;
+  flex: 1; text-align: center;
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+main { padding: 20px 16px 80px; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* Halaman non-rekap dibatasi lebar agar tetap rapi */
+#page-dashboard,
+#page-target,
+#page-input {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* Rekap: full width di desktop, tetap bisa scroll di mobile */
+#page-rekap {
+  width: 100%;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title .icon { font-size: 18px; }
+
+/* ============================================================
+   STAT GRID
+   ============================================================ */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 12px;
+  text-align: center;
+  border-top: 4px solid var(--blue);
+}
+.stat-card.green  { border-top-color: var(--green); }
+.stat-card.red    { border-top-color: var(--red); }
+.stat-card.gold   { border-top-color: var(--gold); }
+
+.stat-val {
+  font-size: 28px; font-weight: 800;
+  color: var(--navy); line-height: 1;
+}
+.stat-card.green .stat-val { color: var(--green); }
+.stat-card.red   .stat-val { color: var(--red); }
+.stat-card.gold  .stat-val { color: var(--gold); }
+
+.stat-lbl {
+  font-size: 11px; font-weight: 600;
+  color: var(--gray-4); margin-top: 4px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+.progress-wrap { margin-bottom: 16px; }
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 13px; font-weight: 600;
+  color: var(--navy); margin-bottom: 6px;
+}
+.progress-bar {
+  background: var(--gray-2); border-radius: 99px; height: 12px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--green), #27ae60);
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+.form-group { margin-bottom: 14px; }
+
+label {
+  display: block; font-size: 12px; font-weight: 700;
+  color: var(--navy2); margin-bottom: 5px;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+
+input[type=text], input[type=date], select, textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--gray-2);
+  border-radius: 8px;
+  font-family: inherit; font-size: 14px;
+  background: var(--white); color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(36,113,163,.12);
+}
+
+.form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+
+/* Langkah Toggle */
+.langkah-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+
+.langkah-item {
+  border: 1.5px solid var(--gray-2);
+  border-radius: 10px; overflow: hidden;
+}
+
+.langkah-header {
+  background: var(--navy);
+  color: var(--white);
+  font-size: 12px; font-weight: 700;
+  padding: 8px 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.langkah-header .step-num {
+  background: var(--gold);
+  color: var(--navy);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; flex-shrink: 0;
+}
+
+.langkah-body {
+  padding: 10px 12px;
+  display: flex; gap: 8px;
+}
+
+.toggle-btn {
+  flex: 1; padding: 8px 6px;
+  border: 1.5px solid var(--gray-2);
+  border-radius: 7px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  background: var(--gray-1); color: var(--gray-4);
+  transition: all var(--transition);
+}
+.toggle-btn.ya.active {
+  background: var(--green-l); border-color: var(--green); color: var(--green);
+}
+.toggle-btn.tidak.active {
+  background: var(--red-l); border-color: var(--red); color: var(--red);
+}
+
+/* Keterangan Badge */
+.keterangan-preview {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  margin-top: 4px;
+  font-size: 15px; font-weight: 800;
+  transition: all var(--transition);
+}
+.keterangan-preview.patuh {
+  background: var(--green-l); color: var(--green);
+  border: 2px solid var(--green);
+}
+.keterangan-preview.tidak-patuh {
+  background: var(--red-l); color: var(--red);
+  border: 2px solid var(--red);
+}
+.keterangan-preview.pending {
+  background: var(--gray-2); color: var(--gray-4);
+  border: 2px dashed var(--gray-3);
+}
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, var(--navy), var(--blue));
+  color: var(--white);
+  border: none; border-radius: 10px;
+  padding: 15px;
+  font-family: inherit; font-size: 15px; font-weight: 700;
+  cursor: pointer; letter-spacing: .03em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity var(--transition), transform var(--transition);
+  box-shadow: 0 4px 15px rgba(13,59,102,.3);
+}
+.btn-submit:hover { opacity: .92; transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* ============================================================
+   FILTER BAR
+   ============================================================ */
+.filter-bar {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: grid; grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 10px; align-items: end;
+}
+
+.filter-bar label {
+  margin-bottom: 4px;
+}
+
+.btn-filter {
+  background: var(--navy);
+  color: var(--white);
+  border: none; border-radius: 8px;
+  padding: 11px 16px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity var(--transition);
+}
+.btn-filter:hover { opacity: .85; }
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.table-wrap {
+  overflow-x: auto; border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+}
+
+table {
+  width: 100%; border-collapse: collapse;
+  background: var(--white);
+  font-size: 13px;
+  min-width: 700px; /* agar kolom tidak terlalu sempit di mobile */
+}
+
+thead tr {
+  background: var(--navy);
+  color: var(--white);
+}
+thead th {
+  padding: 12px 10px;
+  font-weight: 700; font-size: 12px;
+  text-transform: uppercase; letter-spacing: .04em;
+  white-space: nowrap; text-align: center;
+}
+
+tbody tr:nth-child(even) { background: var(--gray-1); }
+tbody tr:hover { background: rgba(36,113,163,.07); }
+
+tbody td {
+  padding: 10px; text-align: center;
+  border-bottom: 1px solid var(--gray-2);
+  vertical-align: middle;
+}
+
+.badge {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 99px; font-size: 11px; font-weight: 700;
+  white-space: nowrap;
+}
+.badge-patuh   { background: var(--green-l); color: var(--green); }
+.badge-tidak   { background: var(--red-l); color: var(--red); }
+.badge-ya      { background: var(--green-l); color: var(--green); font-size: 10px; }
+.badge-tidak-s { background: var(--red-l); color: var(--red); font-size: 10px; }
+
+.empty-state {
+  padding: 48px; text-align: center; color: var(--gray-4);
+}
+.empty-state .icon { font-size: 48px; display: block; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; font-weight: 600; }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--navy); color: var(--white);
+  padding: 12px 24px; border-radius: 99px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+  z-index: 9999; transition: transform .3s ease;
+  pointer-events: none; white-space: nowrap;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.success { background: var(--green); }
+#toast.error   { background: var(--red); }
+
+/* ============================================================
+   LOADING SPINNER
+   ============================================================ */
+.spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   INSTALL BANNER
+   ============================================================ */
+#install-banner {
+  display: none;
+  background: linear-gradient(135deg, var(--gold), #e67e22);
+  color: var(--navy);
+  padding: 12px 16px;
+  align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 700;
+}
+#install-banner.show { display: flex; }
+#btn-install {
+  margin-left: auto; background: var(--navy); color: var(--white);
+  border: none; border-radius: 6px; padding: 7px 14px;
+  font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+
+/* ============================================================
+   TARGET SAMPEL
+   ============================================================ */
+.target-unit-list { display: flex; flex-direction: column; gap: 14px; }
+
+.target-unit-row {
+  display: grid; grid-template-columns: 1fr auto auto;
+  align-items: center; gap: 10px;
+  padding: 14px 16px;
+  background: var(--gray-1);
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-2);
+}
+
+.target-unit-name {
+  font-size: 14px; font-weight: 700; color: var(--navy);
+}
+.target-unit-sub {
+  font-size: 11px; color: var(--gray-4); margin-top: 2px;
+}
+
+.target-input-wrap {
+  display: flex; align-items: center; gap: 6px;
+}
+.target-input-wrap input[type=number] {
+  width: 70px; padding: 8px 10px;
+  border: 1.5px solid var(--gray-2); border-radius: 8px;
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  text-align: center; outline: none;
+  transition: border-color var(--transition);
+}
+.target-input-wrap input[type=number]:focus {
+  border-color: var(--blue); box-shadow: 0 0 0 3px rgba(36,113,163,.12);
+}
+.target-input-wrap span {
+  font-size: 12px; color: var(--gray-4); font-weight: 600;
+}
+
+.progress-unit-wrap { margin-top: 10px; }
+.progress-unit-bar { background: var(--gray-2); border-radius: 99px; height: 8px; overflow: hidden; margin-top: 4px; }
+.progress-unit-fill { height: 100%; border-radius: 99px; transition: width .5s ease; }
+
+.target-save-all {
+  width: 100%; margin-top: 4px;
+  background: linear-gradient(135deg, var(--navy), var(--blue));
+  color: var(--white); border: none; border-radius: 10px;
+  padding: 14px; font-family: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 15px rgba(13,59,102,.25);
+  transition: opacity var(--transition);
+}
+.target-save-all:hover { opacity: .88; }
+
+/* dashboard unit cards */
+.unit-progress-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.unit-progress-card {
+  background: var(--gray-1); border-radius: 10px; padding: 12px 14px;
+  border: 1.5px solid var(--gray-2);
+}
+.unit-progress-card .unit-name { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.unit-progress-card .unit-nums {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--gray-4); margin-bottom: 4px;
+}
+.unit-progress-card .unit-nums strong { color: var(--navy); font-size: 13px; }
+
+@media (max-width: 480px) { .unit-progress-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 600px) {
+  .stat-grid { grid-template-columns: repeat(3, 1fr); }
+  .stat-val { font-size: 22px; }
+  .filter-bar { grid-template-columns: 1fr 1fr; }
+  .filter-bar .btn-filter { grid-column: span 2; }
+  .form-row { grid-template-columns: 1fr; }
+  .langkah-grid { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 700px) {
+  main { padding: 24px 24px 80px; }
+}
+
+/* ============================================================
+   MODAL INPUT AUDIT
+   ============================================================ */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(13,59,102,.55);
+  backdrop-filter: blur(3px);
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-sheet {
+  background: var(--white);
+  width: 100%; max-width: 680px;
+  max-height: 92vh;
+  border-radius: 20px 20px 0 0;
+  overflow-y: auto;
+  padding: 0 0 32px;
+  animation: slideUp .3s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-handle {
+  display: flex; justify-content: center; padding: 12px 0 4px;
+}
+.modal-handle::before {
+  content: ''; width: 40px; height: 4px;
+  background: var(--gray-3); border-radius: 99px;
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px 16px;
+  border-bottom: 1px solid var(--gray-2);
+  margin-bottom: 16px;
+}
+.modal-header h2 { font-size: 16px; font-weight: 800; color: var(--navy); }
+
+.btn-close-modal {
+  background: var(--gray-2); border: none; border-radius: 50%;
+  width: 30px; height: 30px; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gray-4); transition: background var(--transition);
+}
+.btn-close-modal:hover { background: var(--gray-3); }
+.modal-body { padding: 0 20px; }
+
+@media (min-width: 700px) {
+  .modal-overlay { align-items: center; padding: 20px; }
+  .modal-sheet { border-radius: 20px; max-height: 88vh; }
+}
+</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<!-- Install Banner -->
+<div id="install-banner">
+  <span>📲</span>
+  <span>Install aplikasi untuk akses offline</span>
+  <button id="btn-install">Install</button>
+</div>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- Sidebar Drawer -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <img src="logo_surya-removebg-preview.png" alt="Logo" onerror="this.style.display='none'" />
+    <div class="sidebar-brand-text">
+      <div class="brand-name">Audit Kebersihan</div>
+      <div class="brand-sub">6 Langkah WHO</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Menu Utama</div>
+  <nav class="sidebar-nav">
+    <button class="tab-btn active" data-page="dashboard">
+      <span class="tab-icon">📊</span> Dashboard
+    </button>
+    <button class="tab-btn" data-page="rekap">
+      <span class="tab-icon">📋</span> Rekap Data
+    </button>
+    <button class="tab-btn" data-page="target">
+      <span class="tab-icon">🎯</span> Target Sampel
+    </button>
+    <button class="tab-btn" id="sidebar-input-btn">
+      <span class="tab-icon">✍️</span> Input Audit
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="dot"></span>
+    <span>Google Sheets · Terhubung</span>
+  </div>
+</aside>
+
+<!-- App Shell (geser ke kanan di desktop) -->
+<div class="app-shell">
+
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <button class="btn-hamburger" id="btn-hamburger" title="Menu">☰</button>
+    <span class="topbar-page-title" id="topbar-page-title">Dashboard</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-icon" id="btn-refresh" title="Refresh data">🔄</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- ====================================================
+       PAGE: DASHBOARD
+       ==================================================== -->
+  <div id="page-dashboard" class="page active">
+
+    <!-- Filter -->
+    <div class="filter-bar" id="dash-filter">
+      <div class="form-group" style="margin:0">
+        <label>Unit</label>
+        <select id="dash-unit"><option value="all">Semua Unit</option></select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Tahun</label>
+        <select id="dash-tahun"><option value="all">Semua Tahun</option></select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Bulan</label>
+        <select id="dash-bulan">
+          <option value="all">Semua Bulan</option>
+          <option value="1">Januari</option><option value="2">Februari</option>
+          <option value="3">Maret</option><option value="4">April</option>
+          <option value="5">Mei</option><option value="6">Juni</option>
+          <option value="7">Juli</option><option value="8">Agustus</option>
+          <option value="9">September</option><option value="10">Oktober</option>
+          <option value="11">November</option><option value="12">Desember</option>
+        </select>
+      </div>
+      <button class="btn-filter" id="dash-apply">Tampilkan</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-total">—</div>
+        <div class="stat-lbl">Total Audit</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-val" id="stat-patuh">—</div>
+        <div class="stat-lbl">Patuh</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-val" id="stat-tidak">—</div>
+        <div class="stat-lbl">Tidak Patuh</div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📈</span> Tingkat Kepatuhan</div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Kepatuhan</span>
+          <span id="persen-label" style="color:var(--green);font-size:18px;font-weight:800">—%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--gray-4);margin-top:8px">
+        Target kepatuhan hand hygiene WHO ≥ 85%
+      </p>
+    </div>
+
+    <!-- Kepatuhan per Langkah -->
+    <div class="card" id="card-langkah-stat">
+      <div class="card-title"><span class="icon">✋</span> Kepatuhan per Langkah</div>
+      <div id="langkah-bars">
+        <p style="color:var(--gray-4);font-size:13px">Muat data terlebih dahulu</p>
+      </div>
+    </div>
+
+    <!-- Capaian per Unit -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🏢</span> Capaian Sampel per Unit</div>
+      <div class="unit-progress-grid" id="unit-progress-grid">
+        <p style="color:var(--gray-4);font-size:13px;grid-column:span 2">Muat data terlebih dahulu</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ====================================================
+       PAGE: TARGET SAMPEL
+       ==================================================== -->
+  <div id="page-target" class="page">
+    <div class="card">
+      <div class="card-title"><span class="icon">🎯</span> Target Sampel per Unit</div>
+      <p style="font-size:13px;color:var(--gray-4);margin-bottom:16px">
+        Atur jumlah target sampel audit untuk setiap unit. Data disimpan di perangkat ini.
+      </p>
+      <div class="target-unit-list" id="target-unit-list">
+        <!-- diisi JS -->
+      </div>
+      <button class="target-save-all" id="btn-save-target">💾 Simpan Semua Target</button>
+    </div>
+  </div>
+  <!-- ====================================================
+       PAGE: REKAP DATA
+       ==================================================== -->
+  <div id="page-rekap" class="page">
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <div class="form-group" style="margin:0">
+        <label>Unit</label>
+        <select id="rek-unit"><option value="all">Semua Unit</option></select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Tahun</label>
+        <select id="rek-tahun"><option value="all">Semua Tahun</option></select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Bulan</label>
+        <select id="rek-bulan">
+          <option value="all">Semua Bulan</option>
+          <option value="1">Januari</option><option value="2">Februari</option>
+          <option value="3">Maret</option><option value="4">April</option>
+          <option value="5">Mei</option><option value="6">Juni</option>
+          <option value="7">Juli</option><option value="8">Agustus</option>
+          <option value="9">September</option><option value="10">Oktober</option>
+          <option value="11">November</option><option value="12">Desember</option>
+        </select>
+      </div>
+      <button class="btn-filter" id="rek-apply">Cari</button>
+      <button class="btn-filter" id="btn-export" onclick="exportExcel()" style="background:var(--green);display:none">⬇️ Export Excel</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="rekap-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Tanggal</th>
+            <th>Observer</th>
+            <th>Petugas</th>
+            <th>Unit</th>
+            <th>L1</th><th>L2</th><th>L3</th>
+            <th>L4</th><th>L5</th><th>L6</th>
+            <th>Keterangan</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="rekap-tbody">
+          <tr><td colspan="12" class="empty-state">
+            <span class="icon">📋</span>
+            <p>Klik "Cari" untuk memuat data</p>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="rekap-info" style="text-align:right;font-size:12px;color:var(--gray-4);margin-top:8px"></div>
+  </div>
+
+</main>
+
+<!-- ====================================================
+     MODAL: INPUT AUDIT
+     ==================================================== -->
+<div class="modal-overlay" id="modal-input">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2>✍️ Input Audit Kebersihan Tangan</h2>
+      <button class="btn-close-modal" id="btn-close-modal">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tanggal</label>
+          <input type="date" id="f-tanggal" />
+        </div>
+        <div class="form-group">
+          <label>Unit</label>
+          <select id="f-unit">
+            <option value="">— Pilih Unit —</option>
+            <option>Perkantoran</option>
+            <option>RM</option>
+            <option>Keuangan</option>
+            <option>Front Office / Customer Service</option>
+            <option>Cleaning Service</option>
+            <option>Security</option>
+            <option>Petugas Parkir</option>
+            <option>Sopir</option>
+            <option>Teknisi</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nama Observer</label>
+          <input type="text" id="f-observer" placeholder="Nama lengkap observer" />
+        </div>
+        <div class="form-group">
+          <label>Nama Petugas (Inisial)</label>
+          <input type="text" id="f-petugas" placeholder="Contoh: ANS, BDP..." />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Penilaian 6 Langkah Kebersihan Tangan</label>
+        <div class="langkah-grid" id="langkah-grid"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Hasil Otomatis</label>
+        <div class="keterangan-preview pending" id="ket-preview">
+          ⏳ Pilih semua langkah untuk melihat hasil
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btn-submit">
+        <span>💾</span> Simpan Data Audit
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// KONFIGURASI — GANTI URL INI SETELAH DEPLOY APPS SCRIPT
+// ============================================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzYTAv5iOoB7xvEG31rRhDE0Rx1m8u51000k0xASh2Opz_abL3DAHMpbEsrGfmvuDGX/exec';
+
+// ============================================================
+// DAFTAR UNIT TETAP
+// ============================================================
+const UNITS = [
+  'Perkantoran',
+  'RM',
+  'Keuangan',
+  'Front Office / Customer Service',
+  'Cleaning Service',
+  'Security',
+  'Petugas Parkir',
+  'Sopir',
+  'Teknisi'
+];
+
+// ============================================================
+// TARGET SAMPEL — simpan ke localStorage
+// ============================================================
+const TARGET_KEY = 'audit_hh_targets_shu';
+
+function loadTargets() {
+  try {
+    const saved = localStorage.getItem(TARGET_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  // Default 100 per unit
+  const def = {};
+  UNITS.forEach(u => def[u] = 100);
+  return def;
+}
+
+function saveTargets(targets) {
+  localStorage.setItem(TARGET_KEY, JSON.stringify(targets));
+}
+
+function buildTargetPage() {
+  const targets = loadTargets();
+  const list = document.getElementById('target-unit-list');
+  list.innerHTML = UNITS.map(u => `
+    <div class="target-unit-row">
+      <div>
+        <div class="target-unit-name">${u}</div>
+        <div class="target-unit-sub">Target jumlah sampel audit</div>
+      </div>
+      <div class="target-input-wrap">
+        <input type="number" min="1" max="9999" id="tgt-${u.replace(/[^a-z0-9]/gi,'_')}"
+          value="${targets[u] || 100}" />
+        <span>sampel</span>
+      </div>
+    </div>`).join('');
+}
+
+document.getElementById('btn-save-target').addEventListener('click', () => {
+  const targets = {};
+  UNITS.forEach(u => {
+    const id = 'tgt-' + u.replace(/[^a-z0-9]/gi,'_');
+    const el = document.getElementById(id);
+    targets[u] = parseInt(el?.value) || 100;
+  });
+  saveTargets(targets);
+  showToast('✅ Target sampel disimpan', 'success');
+  // refresh dashboard if open
+  if (document.getElementById('page-dashboard').classList.contains('active')) {
+    loadDashboard();
+  }
+});
+
+function buildUnitProgressGrid(data) {
+  const targets = loadTargets();
+  const wrap = document.getElementById('unit-progress-grid');
+  if (!data.length) {
+    wrap.innerHTML = '<p style="color:var(--gray-4);font-size:13px;grid-column:span 2">Belum ada data</p>';
+    return;
+  }
+  wrap.innerHTML = UNITS.map(u => {
+    const uData = data.filter(d => d.unit === u);
+    const total = uData.length;
+    const target = targets[u] || 100;
+    const patuh = uData.filter(d => d.keterangan === 'Patuh').length;
+    const pct = total > 0 ? Math.round((patuh / total) * 100) : 0;
+    const samplePct = Math.min(100, Math.round((total / target) * 100));
+    const color = pct >= 85 ? '#1e8449' : pct >= 60 ? '#f39c12' : '#c0392b';
+    return `
+      <div class="unit-progress-card">
+        <div class="unit-name">${u}</div>
+        <div class="unit-nums">
+          <span>Sampel: <strong>${total}/${target}</strong></span>
+          <span>Patuh: <strong style="color:${color}">${pct}%</strong></span>
+        </div>
+        <div class="unit-progress-bar">
+          <div class="unit-progress-fill" style="width:${samplePct}%;background:${color}"></div>
+        </div>
+        <div style="font-size:10px;color:var(--gray-4);margin-top:3px">
+          ${samplePct}% target terpenuhi
+        </div>
+      </div>`;
+  }).join('');
+}
+
+const LANGKAH_DESC = [
+  'Ratakan dengan kedua telapak tangan',
+  'Gosok punggung dan sela-sela jari tangan kiri dengan tangan kanan dan sebaliknya',
+  'Gosok kedua telapak dan sela-sela jari',
+  'Jari-jari sisi dalam dari kedua tangan saling mengunci',
+  'Gosok ibu jari kiri berputar dalam genggaman tangan kanan dan lakukan sebaliknya',
+  'Gosokkan dengan memutar ujung jari-jari tangan kanan di telapak tangan kiri dan sebaliknya'
+];
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  langkah: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
+  filters: { units: [], tahuns: [] }
+};
+
+// ============================================================
+// TABS — auto-load data saat pindah tab
+// ============================================================
+const PAGE_TITLES = {
+  dashboard: '📊 Dashboard',
+  rekap: '📋 Rekap Data',
+  target: '🎯 Target Sampel'
+};
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const page = btn.dataset.page;
+    document.getElementById('page-' + page).classList.add('active');
+    // Update topbar page title
+    const titleEl = document.getElementById('topbar-page-title');
+    if (titleEl) titleEl.textContent = PAGE_TITLES[page] || page;
+    // Close sidebar on mobile
+    closeSidebar();
+    if (page === 'dashboard') loadDashboard();
+    if (page === 'rekap') loadRekap();
+  });
+});
+
+// ============================================================
+// SIDEBAR / HAMBURGER
+// ============================================================
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+document.getElementById('btn-hamburger').addEventListener('click', () => {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar.classList.contains('open')) closeSidebar();
+  else openSidebar();
+});
+document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
+
+// Sidebar "Input Audit" button
+document.getElementById('sidebar-input-btn').addEventListener('click', () => {
+  closeSidebar();
+  openModal();
+});
+
+// ============================================================
+// BUILD LANGKAH FORM
+// ============================================================
+function buildLangkahGrid() {
+  const grid = document.getElementById('langkah-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 6; i++) {
+    grid.innerHTML += `
+      <div class="langkah-item">
+        <div class="langkah-header">
+          <span class="step-num">${i}</span>
+          ${LANGKAH_DESC[i - 1]}
+        </div>
+        <div class="langkah-body">
+          <button type="button" class="toggle-btn ya" data-step="${i}" data-val="Ya">✓ Ya</button>
+          <button type="button" class="toggle-btn tidak" data-step="${i}" data-val="Tidak">✗ Tidak</button>
+        </div>
+      </div>`;
+  }
+
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const step = btn.dataset.step;
+      const val = btn.dataset.val;
+      state.langkah[step] = val;
+      // Update UI toggle
+      btn.closest('.langkah-body').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateKeteranganPreview();
+    });
+  });
+}
+
+function updateKeteranganPreview() {
+  const vals = Object.values(state.langkah);
+  const filled = vals.filter(v => v !== null).length;
+  const allYa = vals.every(v => v === 'Ya');
+  const prev = document.getElementById('ket-preview');
+  if (filled < 6) {
+    prev.className = 'keterangan-preview pending';
+    prev.textContent = `⏳ ${filled}/6 langkah dipilih`;
+  } else if (allYa) {
+    prev.className = 'keterangan-preview patuh';
+    prev.textContent = '✅ PATUH — Semua 6 langkah dilakukan';
+  } else {
+    prev.className = 'keterangan-preview tidak-patuh';
+    prev.textContent = '❌ TIDAK PATUH — Ada langkah yang terlewat';
+  }
+}
+
+// ============================================================
+// SET DEFAULT DATE
+// ============================================================
+function setDefaultDate() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-tanggal').value = today;
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+document.getElementById('btn-submit').addEventListener('click', async () => {
+  const tanggal   = document.getElementById('f-tanggal').value;
+  const unit      = document.getElementById('f-unit').value;
+  const observer  = document.getElementById('f-observer').value.trim();
+  const petugas   = document.getElementById('f-petugas').value.trim();
+
+  if (!tanggal || !unit || !observer || !petugas) {
+    showToast('❗ Isi semua field terlebih dahulu', 'error'); return;
+  }
+  const vals = Object.values(state.langkah);
+  if (vals.filter(v => v !== null).length < 6) {
+    showToast('❗ Pilih Ya/Tidak untuk semua 6 langkah', 'error'); return;
+  }
+
+  const btn = document.getElementById('btn-submit');
+  const isEdit = btn.dataset.mode === 'edit';
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> ${isEdit ? 'Mengupdate...' : 'Menyimpan...'}`;
+
+  const payload = {
+    tanggal, unit, namaObserver: observer, namaPetugas: petugas,
+    langkah1: state.langkah[1], langkah2: state.langkah[2],
+    langkah3: state.langkah[3], langkah4: state.langkah[4],
+    langkah5: state.langkah[5], langkah6: state.langkah[6]
+  };
+
+  // Kalau mode edit, tambahkan rowId untuk matching di GAS
+  if (isEdit && editingIdx !== null) {
+    const orig = currentTableData[editingIdx];
+    payload.rowId = orig.no;
+  }
+
+  try {
+    const action = isEdit ? 'updateData' : 'addData';
+    const res = await gasPost(action, payload);
+    if (res.status === 'success') {
+      showToast(`✅ ${isEdit ? 'Diupdate' : 'Tersimpan'} — ${res.keterangan}`, 'success');
+      closeEditModal();
+      loadFilters();
+      loadDashboard();
+      loadRekap();
+    } else {
+      showToast('❌ Gagal: ' + res.message, 'error');
+    }
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = isEdit ? '<span>💾</span> Update Data Audit' : '<span>💾</span> Simpan Data Audit';
+  }
+});
+
+function resetForm() {
+  document.getElementById('f-unit').value = '';
+  document.getElementById('f-observer').value = '';
+  document.getElementById('f-petugas').value = '';
+  state.langkah = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
+  buildLangkahGrid();
+  setDefaultDate();
+  updateKeteranganPreview();
+}
+
+// ============================================================
+// LOAD DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  const unit  = document.getElementById('dash-unit').value;
+  const tahun = document.getElementById('dash-tahun').value;
+  const bulan = document.getElementById('dash-bulan').value;
+
+  try {
+    const res = await gasGet('getData', { unit, tahun, bulan });
+    if (res.status === 'success') {
+      document.getElementById('stat-total').textContent = res.total;
+      document.getElementById('stat-patuh').textContent = res.totalPatuh;
+      document.getElementById('stat-tidak').textContent = res.totalTidakPatuh;
+      const persen = res.persenPatuh;
+      document.getElementById('persen-label').textContent = persen + '%';
+      document.getElementById('progress-fill').style.width = persen + '%';
+      buildLangkahStats(res.data);
+      buildUnitProgressGrid(res.data);
+    }
+  } catch (e) {
+    showToast('❌ Gagal memuat dashboard', 'error');
+  }
+}
+
+function buildLangkahStats(data) {
+  const wrap = document.getElementById('langkah-bars');
+  if (!data.length) { wrap.innerHTML = '<p style="color:var(--gray-4);font-size:13px">Belum ada data</p>'; return; }
+  wrap.innerHTML = '';
+  for (let i = 1; i <= 6; i++) {
+    const key = 'langkah' + i;
+    const ya = data.filter(d => d[key] === 'Ya').length;
+    const persen = Math.round((ya / data.length) * 100);
+    const color = persen >= 85 ? 'var(--green)' : persen >= 60 ? 'var(--gold)' : 'var(--red)';
+    wrap.innerHTML += `
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:5px">
+          <span>Langkah ${i}: ${LANGKAH_DESC[i-1]}</span>
+          <span style="color:${color}">${persen}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${persen}%;background:${color}"></div>
+        </div>
+      </div>`;
+  }
+}
+
+document.getElementById('dash-apply').addEventListener('click', loadDashboard);
+
+// ============================================================
+// LOAD REKAP TABLE
+// ============================================================
+async function loadRekap() {
+  const unit  = document.getElementById('rek-unit').value;
+  const tahun = document.getElementById('rek-tahun').value;
+  const bulan = document.getElementById('rek-bulan').value;
+  const tbody = document.getElementById('rekap-tbody');
+  const info  = document.getElementById('rekap-info');
+
+  tbody.innerHTML = '<tr><td colspan="12" style="padding:30px;text-align:center;color:var(--gray-4)"><span class="spinner" style="border-top-color:var(--navy);border-color:var(--gray-2)"></span></td></tr>';
+
+  try {
+    const res = await gasGet('getData', { unit, tahun, bulan });
+    if (res.status === 'success') {
+      renderTable(res.data);
+      info.textContent = `Menampilkan ${res.data.length} data`;
+      document.getElementById('btn-export').style.display = res.data.length > 0 ? '' : 'none';
+    }
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="12" class="empty-state"><p>❌ Gagal memuat data</p></td></tr>`;
+  }
+}
+
+let currentTableData = [];
+
+function renderTable(data) {
+  currentTableData = data;
+  const tbody = document.getElementById('rekap-tbody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="13" class="empty-state"><span class="icon">📋</span><p>Tidak ada data ditemukan</p></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map((d, idx) => `
+    <tr id="row-${idx}">
+      <td>${idx + 1}</td>
+      <td>${d.tanggal}</td>
+      <td style="text-align:left">${d.namaObserver}</td>
+      <td>${d.namaPetugas}</td>
+      <td><span style="background:var(--sky);color:var(--navy);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700">${d.unit}</span></td>
+      ${[1,2,3,4,5,6].map(i => `<td>${d['langkah'+i] === 'Ya'
+        ? '<span class="badge badge-ya">Ya</span>'
+        : '<span class="badge badge-tidak-s">Tdk</span>'}</td>`).join('')}
+      <td><span class="badge ${d.keterangan === 'Patuh' ? 'badge-patuh' : 'badge-tidak'}">${d.keterangan}</span></td>
+      <td style="white-space:nowrap">
+        <button onclick="openEditModal(${idx})" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px">✏️ Edit</button>
+        <button onclick="deleteRow(${idx})" style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">🗑️ Hapus</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// EXPORT EXCEL
+// ============================================================
+function exportExcel() {
+  if (!currentTableData || currentTableData.length === 0) {
+    showToast('⚠️ Tidak ada data untuk diekspor', 'error');
+    return;
+  }
+
+  // Ambil info filter untuk nama file
+  const unitEl  = document.getElementById('rek-unit');
+  const tahunEl = document.getElementById('rek-tahun');
+  const bulanEl = document.getElementById('rek-bulan');
+  const unitLabel  = unitEl.options[unitEl.selectedIndex].text;
+  const tahunLabel = tahunEl.options[tahunEl.selectedIndex].text;
+  const bulanLabel = bulanEl.options[bulanEl.selectedIndex].text;
+
+  // Nama bulan Indonesia untuk nama file
+  const namaBulan = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const bulanVal  = bulanEl.value;
+  const bulanStr  = bulanVal === 'all' ? 'Semua-Bulan' : namaBulan[parseInt(bulanVal)];
+  const tahunStr  = tahunEl.value === 'all' ? 'Semua-Tahun' : tahunEl.value;
+  const unitStr   = unitEl.value === 'all' ? 'Semua-Unit' : unitEl.value.replace(/\s+/g, '-');
+
+  // Buat header sheet info
+  const now = new Date();
+  const tglExport = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+
+  // Baris judul dan info
+  const titleRows = [
+    ['REKAP AUDIT KEBERSIHAN TANGAN 6 LANGKAH WHO'],
+    ['RSU Surya Husadha Ubung'],
+    [`Unit: ${unitLabel}   |   Tahun: ${tahunLabel}   |   Bulan: ${bulanLabel}`],
+    [`Tanggal Export: ${tglExport}   |   Total Data: ${currentTableData.length}`],
+    [] // baris kosong pemisah
+  ];
+
+  // Header kolom tabel
+  const header = ['No', 'Tanggal', 'Nama Observer', 'Nama Petugas', 'Unit',
+    'Langkah 1', 'Langkah 2', 'Langkah 3', 'Langkah 4', 'Langkah 5', 'Langkah 6', 'Keterangan'];
+
+  // Baris data
+  const rows = currentTableData.map((d, i) => [
+    i + 1,
+    d.tanggal,
+    d.namaObserver,
+    d.namaPetugas,
+    d.unit,
+    d.langkah1, d.langkah2, d.langkah3,
+    d.langkah4, d.langkah5, d.langkah6,
+    d.keterangan
+  ]);
+
+  // Baris ringkasan di bawah
+  const totalPatuh      = currentTableData.filter(d => d.keterangan === 'Patuh').length;
+  const totalTidakPatuh = currentTableData.filter(d => d.keterangan === 'Tidak Patuh').length;
+  const persen          = Math.round((totalPatuh / currentTableData.length) * 100);
+
+  const summaryRows = [
+    [],
+    ['RINGKASAN'],
+    ['Total Audit', currentTableData.length],
+    ['Patuh', totalPatuh],
+    ['Tidak Patuh', totalTidakPatuh],
+    ['Tingkat Kepatuhan', `${persen}%`]
+  ];
+
+  // Gabungkan semua baris
+  const allRows = [...titleRows, header, ...rows, ...summaryRows];
+
+  // Buat workbook
+  const ws = XLSX.utils.aoa_to_sheet(allRows);
+
+  // Lebar kolom
+  ws['!cols'] = [
+    {wch:5}, {wch:13}, {wch:20}, {wch:18}, {wch:18},
+    {wch:11}, {wch:11}, {wch:11}, {wch:11}, {wch:11}, {wch:11},
+    {wch:14}
+  ];
+
+  // Merge sel judul (baris 1–4 kolom A sampai L)
+  ws['!merges'] = [
+    { s:{r:0,c:0}, e:{r:0,c:11} },
+    { s:{r:1,c:0}, e:{r:1,c:11} },
+    { s:{r:2,c:0}, e:{r:2,c:11} },
+    { s:{r:3,c:0}, e:{r:3,c:11} }
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Rekap Audit');
+
+  const fileName = `Audit-HH_${unitStr}_${bulanStr}-${tahunStr}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+  showToast(`✅ Export berhasil: ${fileName}`, 'success');
+}
+
+// ============================================================
+// DELETE ROW
+// ============================================================
+async function deleteRow(idx) {
+  const d = currentTableData[idx];
+  if (!confirm(`Hapus data audit:\n${d.namaPetugas} — ${d.tanggal} — ${d.unit}?`)) return;
+  try {
+    const res = await gasPost('deleteData', {
+      rowId: d.no,
+      namaPetugas: d.namaPetugas,
+      namaObserver: d.namaObserver,
+      unit: d.unit
+    });
+    if (res.status === 'success') {
+      showToast('✅ Data berhasil dihapus', 'success');
+      loadRekap();
+      loadDashboard();
+    } else {
+      showToast('❌ Gagal hapus: ' + res.message, 'error');
+    }
+  } catch(e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// EDIT MODAL
+// ============================================================
+let editingIdx = null;
+
+function openEditModal(idx) {
+  editingIdx = idx;
+  const d = currentTableData[idx];
+
+  // Isi field
+  document.getElementById('f-tanggal').value = d.tanggal
+    ? d.tanggal.split('/').reverse().join('-') : '';
+  document.getElementById('f-unit').value = d.unit;
+  document.getElementById('f-observer').value = d.namaObserver;
+  document.getElementById('f-petugas').value = d.namaPetugas;
+
+  // Reset langkah state
+  state.langkah = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
+  buildLangkahGrid();
+
+  // Set nilai langkah sesuai data
+  for (let i = 1; i <= 6; i++) {
+    const val = d['langkah' + i];
+    state.langkah[i] = val;
+    const body = document.querySelector(`#langkah-grid .langkah-item:nth-child(${i}) .langkah-body`);
+    if (body) {
+      body.querySelectorAll('.toggle-btn').forEach(b => {
+        b.classList.remove('active');
+        if (b.dataset.val === val) b.classList.add('active');
+      });
+    }
+  }
+
+  updateKeteranganPreview();
+
+  // Ganti tombol submit jadi Update
+  const btn = document.getElementById('btn-submit');
+  btn.innerHTML = '<span>💾</span> Update Data Audit';
+  btn.dataset.mode = 'edit';
+
+  document.getElementById('modal-input').classList.add('open');
+  document.querySelector('.modal-sheet').scrollTop = 0;
+}
+
+function closeEditModal() {
+  editingIdx = null;
+  const btn = document.getElementById('btn-submit');
+  btn.innerHTML = '<span>💾</span> Simpan Data Audit';
+  btn.dataset.mode = 'add';
+  resetForm();
+  closeModal();
+}
+
+document.getElementById('rek-apply').addEventListener('click', loadRekap);
+
+// ============================================================
+// LOAD FILTERS
+// ============================================================
+async function loadFilters() {
+  // Unit dropdown pakai daftar tetap UNITS
+  ['dash-unit', 'rek-unit'].forEach(id => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="all">Semua Unit</option>';
+    UNITS.forEach(u => sel.innerHTML += `<option value="${u}">${u}</option>`);
+    if (cur) sel.value = cur;
+  });
+
+  // Tahun dari data sheet
+  try {
+    const res = await gasGet('getFilters', {});
+    if (res.status === 'success') {
+      state.filters = res;
+      populateSelect('dash-tahun', res.tahuns, true);
+      populateSelect('rek-tahun', res.tahuns, true);
+    }
+  } catch (e) { /* silent */ }
+}
+
+function populateSelect(id, items, isTahun = false) {
+  const sel = document.getElementById(id);
+  const cur = sel.value;
+  const defaultLabel = isTahun ? 'Semua Tahun' : 'Semua Unit';
+  sel.innerHTML = `<option value="all">${defaultLabel}</option>`;
+  items.forEach(item => {
+    sel.innerHTML += `<option value="${item}">${item}</option>`;
+  });
+  if (cur) sel.value = cur;
+}
+
+// ============================================================
+// GAS HTTP HELPERS — pakai JSONP agar tidak kena CORS
+// ============================================================
+let _jsonpCounter = 0;
+
+function gasJsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '__gas_cb_' + (++_jsonpCounter);
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      reject(new Error('Timeout - tidak dapat menghubungi server'));
+    }, 15000);
+
+    window[cbName] = (data) => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      resolve(data);
+    };
+
+    const qs = new URLSearchParams({ ...params, callback: cbName }).toString();
+    const script = document.createElement('script');
+    script.src = `${GAS_URL}?${qs}`;
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      reject(new Error('Gagal memuat script'));
+    };
+    document.head.appendChild(script);
+    setTimeout(() => { try { document.head.removeChild(script); } catch(e){} }, 20000);
+  });
+}
+
+async function gasGet(action, params) {
+  return gasJsonp({ action, ...params });
+}
+
+async function gasPost(action, payload) {
+  // Kirim semua data lewat GET + JSONP (GAS tidak support POST cross-origin)
+  return gasJsonp({ action, payload: JSON.stringify(payload) });
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type ? `show ${type}` : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', 3000);
+}
+
+// ============================================================
+// MODAL INPUT AUDIT
+// ============================================================
+function openModal() {
+  document.getElementById('modal-input').classList.add('open');
+  buildLangkahGrid();
+  setDefaultDate();
+  updateKeteranganPreview();
+  // Scroll modal ke atas
+  document.querySelector('.modal-sheet').scrollTop = 0;
+}
+
+function closeModal() {
+  document.getElementById('modal-input').classList.remove('open');
+  // Reset mode ke add jika close dari tombol X / overlay
+  const btn = document.getElementById('btn-submit');
+  if (btn.dataset.mode === 'edit') {
+    editingIdx = null;
+    btn.dataset.mode = 'add';
+    btn.innerHTML = '<span>💾</span> Simpan Data Audit';
+    resetForm();
+  }
+}
+
+// btn-open-input removed (moved to sidebar)
+document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+
+// Klik overlay luar = tutup modal
+document.getElementById('modal-input').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modal-input')) closeModal();
+});
+
+// Escape key = tutup modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ============================================================
+// REFRESH
+// ============================================================
+document.getElementById('btn-refresh').addEventListener('click', () => {
+  loadFilters();
+  const activePage = document.querySelector('.tab-btn.active')?.dataset.page;
+  if (activePage === 'dashboard') loadDashboard();
+  if (activePage === 'rekap') loadRekap();
+  showToast('🔄 Data diperbarui');
+});
+
+// ============================================================
+// PWA INSTALL
+// ============================================================
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+
+document.getElementById('btn-install').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').classList.remove('show');
+  if (outcome === 'accepted') showToast('✅ Aplikasi berhasil diinstall', 'success');
+});
+
+// ============================================================
+// SERVICE WORKER
+// ============================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    console.log('SW registered');
+
+    // Cek update setiap kali halaman dibuka
+    reg.update();
+
+    // Kalau ada SW baru yang waiting → paksa dia langsung aktif
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          // Ada versi baru siap → kirim pesan skipWaiting ke SW baru
+          newSW.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+  });
+
+  // Begitu SW baru ambil alih (controllerchange) → reload otomatis
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      console.log('SW baru aktif, reload halaman...');
+      window.location.reload();
+    }
+  });
+
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'SYNC_COMPLETE') showToast('✅ Data offline berhasil disinkronkan', 'success');
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildLangkahGrid();
+setDefaultDate();
+buildTargetPage();
+loadFilters();
+// Auto-load dashboard saat pertama buka
+loadDashboard();
+</script>
+</div><!-- end .app-shell -->
+</body>
+</html>
